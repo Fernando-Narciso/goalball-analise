@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Análise de Desempenho - Goalball</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Sistema de Análise de Desempenho - Goalball</h1>
+
+        <div class="main-content">
+            <!-- Seção de Controle de Jogo -->
+            <div class="section" id="gameSetupSection">
+                <h2>Configuração da Partida</h2>
+                <div class="form-group">
+                    <label for="teamA">Equipe A (Análise):</label>
+                    <input type="text" id="teamA" placeholder="Nome da Equipe A" required>
+                </div>
+                <div class="form-group">
+                    <label for="teamB">Equipe B (Adversário):</label>
+                    <input type="text" id="teamB" placeholder="Nome da Equipe B" required>
+                </div>
+                <div class="form-group">
+                    <label for="gameDate">Data da Partida:</label>
+                    <input type="date" id="gameDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="gameLocation">Local da Partida:</label>
+                    <input type="text" id="gameLocation" placeholder="Local da partida">
+                </div>
+
+                <!-- Seção de Cadastro de Atletas -->
+                <div class="form-group">
+                    <h3>Cadastro de Atletas (mín. 3, máx. 6)</h3>
+                    <div id="athletesContainer">
+                        <div class="athlete-input">
+                            <input type="text" class="athlete-name" placeholder="Nome do Atleta 1" required>
+                            <button type="button" onclick="removeAthlete(this)" disabled>Remover</button>
+                        </div>
+                        <div class="athlete-input">
+                            <input type="text" class="athlete-name" placeholder="Nome do Atleta 2" required>
+                            <button type="button" onclick="removeAthlete(this)" disabled>Remover</button>
+                        </div>
+                        <div class="athlete-input">
+                            <input type="text" class="athlete-name" placeholder="Nome do Atleta 3" required>
+                            <button type="button" onclick="removeAthlete(this)" disabled>Remover</button>
+                        </div>
+                    </div>
+                    <button type="button" id="addAthleteBtn" onclick="addAthlete()">Adicionar Atleta</button>
+                    <div id="athleteCount" class="athlete-count">Atletas cadastrados: 3</div>
+                </div>
+
+                <button type="button" id="startGameBtn" onclick="startNewGame()" aria-describedby="startGameHelp">Iniciar Nova Partida</button>
+                <div id="startGameHelp" class="sr-only">Clique para iniciar uma nova partida</div>
+            </div>
+
+            <!-- Seção de Informações da Partida (oculta inicialmente) -->
+            <div class="section" id="gameInfoSection" style="display: none;">
+                <h2>Partida em Andamento</h2>
+                <div id="gameStatus" class="game-status">
+                    <h3>Status da Partida</h3>
+                    <p id="gameInfo"></p>
+                    <p id="gameTime"></p>
+                </div>
+                <button type="button" id="endGameBtn" onclick="endGame()" aria-describedby="endGameHelp">Finalizar Partida</button>
+                <div id="endGameHelp" class="sr-only">Clique para finalizar a partida e gerar relatório PDF</div>
+            </div>
+
+            <div class="section" id="playRegistrationSection" style="display: none;">
+                <h2>Registro de Ações - <span id="teamNameDisplay"></span></h2>
+                <form id="playForm">
+                    <div class="form-group">
+                        <label for="playerName">Atleta:</label>
+                        <select id="playerName" required aria-describedby="playerNameHelp">
+                            <option value="">Selecione o atleta</option>
+                        </select>
+                        <div id="playerNameHelp" class="sr-only">Selecione o atleta que está executando a ação</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="originRegion">Região de Origem:</label>
+                        <select id="originRegion" required aria-describedby="originRegionHelp">
+                            <option value="">Selecione a região</option>
+                            <option value="1">Região 1</option>
+                            <option value="1/2">Região 1/2</option>
+                            <option value="2">Região 2</option>
+                            <option value="2/3">Região 2/3</option>
+                            <option value="3">Região 3</option>
+                            <option value="3/4">Região 3/4</option>
+                            <option value="4">Região 4</option>
+                            <option value="4/5">Região 4/5</option>
+                            <option value="5">Região 5</option>
+                            <option value="5/6">Região 5/6</option>
+                            <option value="6">Região 6</option>
+                        </select>
+                        <div id="originRegionHelp" class="sr-only">Selecione a região de onde partiu a ação</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="finalRegion">Região Final:</label>
+                        <select id="finalRegion" required aria-describedby="finalRegionHelp">
+                            <option value="">Selecione a região</option>
+                            <option value="1">Região 1</option>
+                            <option value="1/2">Região 1/2</option>
+                            <option value="2">Região 2</option>
+                            <option value="2/3">Região 2/3</option>
+                            <option value="3">Região 3</option>
+                            <option value="3/4">Região 3/4</option>
+                            <option value="4">Região 4</option>
+                            <option value="4/5">Região 4/5</option>
+                            <option value="5">Região 5</option>
+                            <option value="5/6">Região 5/6</option>
+                            <option value="6">Região 6</option>
+                        </select>
+                        <div id="finalRegionHelp" class="sr-only">Selecione a região onde terminou a ação</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="playResult">Resultado:</label>
+                        <select id="playResult" required aria-describedby="playResultHelp" onchange="handleResultChange()">
+                            <option value="">Selecione o resultado</option>
+                            <option value="gol">Gol</option>
+                            <option value="defesa">Defesa (Adversário)</option>
+                            <option value="out">Out (Fora)</option>
+                            <option value="penalt">Penalidade Cometida</option>
+                        </select>
+                        <div id="playResultHelp" class="sr-only">Selecione o resultado da ação</div>
+                    </div>
+
+                    <div class="form-group" id="penaltGroup" style="display: none;">
+                        <label for="penaltType">Tipo de Penalidade:</label>
+                        <select id="penaltType" aria-describedby="penaltTypeHelp">
+                            <option value="">Selecione o tipo</option>
+                            <option value="highball">Highball</option>
+                            <option value="longball">Longball</option>
+                            <option value="ten_seconds">Ten Seconds</option>
+                            <option value="noise">Noise</option>
+                            <option value="personal_penalty">Personal Penalt</option>
+                        </select>
+                        <div id="penaltTypeHelp" class="sr-only">Selecione o tipo de penalidade</div>
+                    </div>
+
+                    <div class="form-group" id="penaltResultGroup" style="display: none;">
+                        <label for="penaltResult">Resultado da Cobrança (pelo adversário):</label>
+                        <select id="penaltResult" aria-describedby="penaltResultHelp">
+                            <option value="">Selecione o resultado</option>
+                            <option value="defendida">Defendida (nossa defesa)</option>
+                            <option value="convertida">Convertida (gol do adversário)</option>
+                            <option value="desperdicada">Desperdiçada (adversário errou)</option>
+                        </select>
+                        <div id="penaltResultHelp" class="sr-only">Selecione o resultado da cobrança da penalidade pelo adversário</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Observações:</label>
+                        <textarea id="notes" rows="3" placeholder="Observações adicionais sobre a ação..." aria-describedby="notesHelp"></textarea>
+                        <div id="notesHelp" class="sr-only">Campo opcional para observações sobre a ação</div>
+                    </div>
+
+                    <button type="submit">Registrar Ação</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="stats-display" id="statsSection" style="display: none;">
+            <h2>Estatísticas em Tempo Real - <span id="teamStatsDisplay"></span></h2>
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalPlays">0</div>
+                    <div class="stat-label">Total de Ações</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalGoals">0</div>
+                    <div class="stat-label">Gols</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalDefenses">0</div>
+                    <div class="stat-label">Lançamentos Defendidos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalOuts">0</div>
+                    <div class="stat-label">Outs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalPenalties">0</div>
+                    <div class="stat-label">Penalidades Cometidas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="goalEfficiency">0%</div>
+                    <div class="stat-label">Eficiência de Ataque</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="penaltyDefenseRate">0%</div>
+                    <div class="stat-label">Taxa de Defesa em Penalidades</div>
+                </div>
+            </div>
+
+            <h3>Análise por Região de Destino</h3>
+            <div class="stats-grid" id="regionStats">
+                <!-- Stats de região serão inseridas aqui -->
+            </div>
+
+            <h3>Desempenho Individual</h3>
+            <div class="stats-grid" id="playerStats">
+                <!-- Stats de atletas serão inseridas aqui -->
+            </div>
+
+            <h3>Histórico de Ações</h3>
+            <div style="overflow-x: auto;">
+                <table class="data-table" id="playsTable">
+                    <thead>
+                        <tr>
+                            <th>Tempo</th>
+                            <th>Atleta</th>
+                            <th>Origem</th>
+                            <th>Destino</th>
+                            <th>Resultado</th>
+                            <th>Detalhes</th>
+                            <th>Observações</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="playsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
